@@ -1,0 +1,1770 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="format-detection" content="telephone=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>Thoughts of the Moon — 月の思い</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-user-select: none; }
+
+    body {
+      background: linear-gradient(180deg, #071428 0%, #040d1a 100%);
+      min-height: 100vh;
+      font-family: 'Noto Serif JP', 'Georgia', 'Times New Roman', serif;
+      color: #e2e8f0;
+      overflow-x: hidden;
+    }
+
+    /* BGM選択モーダル */
+    #bgm-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgb(2, 8, 24);
+      opacity: 1;
+      transition: opacity 0.6s ease;
+    }
+    #bgm-modal.hide {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .bgm-modal-box {
+      text-align: center;
+      padding: 52px 60px;
+      background: rgba(8, 16, 36, 0.92);
+      border: 1px solid rgba(165, 180, 252, 0.45);
+      border-radius: 20px;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 0 80px rgba(100, 120, 255, 0.22), 0 0 0 1px rgba(165,180,252,0.08);
+    }
+    .bgm-modal-box .modal-star {
+      font-size: 1.8rem;
+      margin-bottom: 20px;
+      opacity: 0.85;
+    }
+    .bgm-modal-box h2 {
+      font-size: 1.1rem;
+      font-weight: 400;
+      letter-spacing: 0.25em;
+      color: #e2e8f0;
+      margin-bottom: 10px;
+    }
+    .bgm-modal-box p {
+      font-size: 0.78rem;
+      letter-spacing: 0.12em;
+      color: #94a3b8;
+      margin-bottom: 36px;
+    }
+    .bgm-modal-btns {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+    }
+    .bgm-modal-btns button {
+      padding: 11px 32px;
+      border-radius: 30px;
+      font-family: inherit;
+      font-size: 0.82rem;
+      letter-spacing: 0.12em;
+      cursor: pointer;
+      transition: all 0.25s;
+    }
+    .btn-bgm-on {
+      background: rgba(165, 180, 252, 0.15);
+      border: 1px solid rgba(165, 180, 252, 0.5);
+      color: #a5b4fc;
+    }
+    .btn-bgm-on:hover {
+      background: rgba(165, 180, 252, 0.28);
+      border-color: #a5b4fc;
+      color: #e0e7ff;
+    }
+    .btn-bgm-off {
+      background: transparent;
+      border: 1px solid rgba(100, 116, 139, 0.3);
+      color: #475569;
+    }
+    .btn-bgm-off:hover {
+      border-color: rgba(100, 116, 139, 0.6);
+      color: #64748b;
+    }
+
+    /* 読了プログレスバー */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 2px;
+      width: 0%;
+      background: linear-gradient(to right, #312e81, #818cf8, #c4b5fd);
+      z-index: 200;
+      transition: width 0.15s ease;
+    }
+
+    /* 星キャンバス（固定背景） */
+    #star-canvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ノイズオーバーレイ */
+    #noise-overlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+      opacity: 0.035;
+    }
+
+    /* コンテンツ */
+    .story-wrapper {
+      position: relative;
+      z-index: 10;
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 100px 36px 220px;
+    }
+
+    .story-title {
+      text-align: center;
+      margin-bottom: 90px;
+      opacity: 0;
+      animation: fadeIn 2.5s ease forwards 0.8s;
+    }
+    .story-title h1 {
+      font-size: clamp(1.6rem, 4vw, 2.2rem);
+      font-weight: 700;
+      letter-spacing: 0.35em;
+      color: #e2e8f0;
+      text-shadow: 0 0 40px rgba(165, 180, 252, 0.5), 0 2px 8px rgba(0,0,0,0.9);
+    }
+    .story-title p {
+      margin-top: 12px;
+      font-size: 0.8rem;
+      letter-spacing: 0.25em;
+      color: #94a3b8;
+    }
+
+    /* 区切り装飾 */
+    .divider {
+      text-align: center;
+      color: #94a3b8;
+      letter-spacing: 0.5em;
+      font-size: 1.1rem;
+      margin: 60px 0;
+      opacity: 0;
+      transition: opacity 1.2s ease, transform 1.2s ease;
+      transform: translateY(10px);
+    }
+    .divider.visible { opacity: 1; transform: translateY(0); }
+
+    /* ストーリー段落 */
+    .story-paragraph {
+      margin-bottom: 2.8em;
+      font-size: clamp(1rem, 2.5vw, 1.15rem);
+      line-height: 2.4;
+      letter-spacing: 0.1em;
+      text-shadow:
+        0 0 30px rgba(100, 130, 220, 0.25),
+        0 1px 4px rgba(0, 0, 0, 0.9),
+        0 2px 10px rgba(0, 0, 0, 0.7);
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 1.2s ease, transform 1.2s ease;
+    }
+    .story-paragraph.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* 傍点（特定シーン強調） */
+    .em { color: #a5b4fc; }
+    .em-yellow {
+      color: #f0e6b0;
+      cursor: pointer;
+    }
+
+    /* 画像ライトボックス */
+    #milky-lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(2, 8, 24, 0.92);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+      cursor: pointer;
+    }
+    #milky-lightbox.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    #milky-lightbox img {
+      max-width: min(88vw, 480px);
+      max-height: 85vh;
+      border-radius: 8px;
+      box-shadow: 0 0 60px rgba(0,0,0,0.8);
+      transform: scale(0.95);
+      transition: transform 0.5s ease;
+      pointer-events: none;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-user-drag: none;
+    }
+    #milky-lightbox.show img {
+      transform: scale(1);
+    }
+    /* 画像保護オーバーレイ */
+    #milky-lightbox::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+    }
+
+    /* クレジット */
+    .credits {
+      text-align: center;
+      margin-top: 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .credits p {
+      font-size: 0.72rem;
+      letter-spacing: 0.25em;
+      color: #94a3b8;
+    }
+    .credits .copyright {
+      margin-top: 18px;
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
+      color: #64748b;
+    }
+
+    /* 終わり */
+    .story-end {
+      text-align: center;
+      color: #94a3b8;
+      font-size: 0.9rem;
+      letter-spacing: 0.4em;
+      padding-top: 40px;
+    }
+
+    /* ---- コントロール（画面右上） ---- */
+    .controls {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: flex-end;
+    }
+    .ctrl-btn {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(2, 8, 24, 0.65);
+      border: 1px solid rgba(100, 116, 139, 0.3);
+      border-radius: 20px;
+      padding: 7px 15px;
+      color: rgba(148, 163, 184, 0.7);
+      font-size: 0.72rem;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      font-family: inherit;
+      transition: color 0.25s, border-color 0.25s;
+    }
+    .ctrl-btn:hover { color: #94a3b8; }
+    .ctrl-btn.active {
+      color: #a5b4fc;
+      border-color: rgba(165, 180, 252, 0.45);
+    }
+    .ctrl-icon { font-size: 0.85rem; }
+
+    /* シェアボタン（右下） */
+    .share-btn {
+      position: fixed;
+      bottom: 28px;
+      right: 20px;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(2, 8, 24, 0.65);
+      border: 1px solid rgba(100, 116, 139, 0.3);
+      border-radius: 20px;
+      padding: 9px 18px;
+      color: rgba(148, 163, 184, 0.7);
+      font-size: 0.75rem;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      font-family: inherit;
+      transition: color 0.25s, border-color 0.25s;
+    }
+    .share-btn:hover {
+      color: #a5b4fc;
+      border-color: rgba(165, 180, 252, 0.4);
+    }
+
+    /* タイトル画面 */
+    #title-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 510;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgb(2, 8, 24);
+      opacity: 0;
+      transition: opacity 1.4s ease;
+      pointer-events: none;
+      cursor: pointer;
+    }
+    #title-screen.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .title-screen-text {
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      font-size: clamp(1.3rem, 3.5vw, 1.9rem);
+      letter-spacing: 0.55em;
+      color: #c8d5e8;
+      text-shadow: 0 0 50px rgba(165, 180, 252, 0.35), 0 2px 8px rgba(0,0,0,0.9);
+      user-select: none;
+      opacity: 0;
+    }
+    .title-screen-text.reveal {
+      animation: titleTextReveal 2.8s ease forwards;
+    }
+    @keyframes titleTextReveal {
+      0%   { opacity: 0; filter: blur(6px); }
+      40%  { opacity: 0.3; filter: blur(3px); }
+      100% { opacity: 1; filter: blur(0px); }
+    }
+    #title-screen.dissolve {
+      animation: titleDissolve 2.5s ease forwards;
+    }
+    @keyframes titleDissolve {
+      0%   { opacity: 1; }
+      100% { opacity: 0; }
+    }
+    .title-screen-text .mem-yellow {
+      color: #f0e6b0;
+      text-shadow: 0 0 30px rgba(240, 230, 176, 0.6), 0 2px 8px rgba(0,0,0,0.9);
+    }
+
+    /* トースト通知 */
+    #toast {
+      position: fixed;
+      bottom: 78px;
+      right: 20px;
+      z-index: 300;
+      background: rgba(15, 23, 42, 0.92);
+      border: 1px solid rgba(100, 116, 139, 0.35);
+      border-radius: 10px;
+      padding: 11px 18px;
+      font-size: 0.78rem;
+      color: #a5b4fc;
+      backdrop-filter: blur(12px);
+      font-family: inherit;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+      pointer-events: none;
+    }
+    #toast.show { opacity: 1; transform: translateY(0); }
+
+    /* オーロラ */
+    .aurora {
+      position: fixed;
+      pointer-events: none;
+      z-index: 0;
+      left: 0; right: 0;
+      top: 0;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .aurora-band {
+      position: absolute;
+      left: -30%;
+      width: 160%;
+      border-radius: 50%;
+      filter: blur(60px);
+      mix-blend-mode: screen;
+      opacity: 0;
+    }
+    .aurora-band:nth-child(1) {
+      top: -10%;
+      height: 45vh;
+      background: radial-gradient(ellipse at 40% 50%, rgba(0,220,160,0.28) 0%, rgba(0,180,255,0.18) 50%, transparent 80%);
+      animation: aurora1 18s ease-in-out infinite;
+    }
+    .aurora-band:nth-child(2) {
+      top: 5%;
+      height: 38vh;
+      background: radial-gradient(ellipse at 65% 50%, rgba(120,60,255,0.22) 0%, rgba(0,200,200,0.15) 50%, transparent 80%);
+      animation: aurora2 24s ease-in-out infinite 4s;
+    }
+    .aurora-band:nth-child(3) {
+      top: -5%;
+      height: 55vh;
+      background: radial-gradient(ellipse at 55% 50%, rgba(0,255,180,0.18) 0%, rgba(60,120,255,0.12) 55%, transparent 80%);
+      animation: aurora3 20s ease-in-out infinite 9s;
+    }
+    .aurora-band:nth-child(4) {
+      top: 10%;
+      height: 35vh;
+      background: radial-gradient(ellipse at 30% 50%, rgba(180,0,255,0.16) 0%, rgba(0,220,180,0.12) 60%, transparent 80%);
+      animation: aurora4 28s ease-in-out infinite 2s;
+    }
+    .aurora-band:nth-child(5) {
+      top: 0%;
+      height: 60vh;
+      background: radial-gradient(ellipse at 75% 50%, rgba(0,255,140,0.14) 0%, rgba(80,180,255,0.10) 60%, transparent 80%);
+      animation: aurora5 22s ease-in-out infinite 13s;
+    }
+    @keyframes aurora1 {
+      0%,100% { opacity:0; transform: translateX(0%)   scaleY(1);   }
+      20%      { opacity:1; }
+      50%      { opacity:0.85; transform: translateX(8%)  scaleY(1.15); }
+      80%      { opacity:0.4; }
+    }
+    @keyframes aurora2 {
+      0%,100% { opacity:0; transform: translateX(0%)    scaleY(1);    }
+      15%     { opacity:0.9; }
+      45%     { opacity:0.7; transform: translateX(-10%) scaleY(1.2);  }
+      80%     { opacity:0.2; }
+    }
+    @keyframes aurora3 {
+      0%,100% { opacity:0; transform: translateX(0%)   scaleY(1);   }
+      25%     { opacity:0.75; }
+      55%     { opacity:0.6; transform: translateX(12%) scaleY(0.9); }
+      85%     { opacity:0.15; }
+    }
+    @keyframes aurora4 {
+      0%,100% { opacity:0; transform: translateX(0%)    scaleY(1);   }
+      30%     { opacity:0.8; }
+      60%     { opacity:0.55; transform: translateX(-8%) scaleY(1.1); }
+      88%     { opacity:0.1; }
+    }
+    @keyframes aurora5 {
+      0%,100% { opacity:0; transform: translateX(0%)   scaleY(1);    }
+      20%     { opacity:0.6; }
+      50%     { opacity:0.5; transform: translateX(6%)  scaleY(1.25); }
+      82%     { opacity:0.2; }
+    }
+
+    /* 流れ星 */
+    .shooting-star {
+      position: fixed;
+      pointer-events: none;
+      z-index: 5;
+      width: 200px;
+      height: 2px;
+      background: linear-gradient(to right, rgba(255,255,255,0.9), transparent);
+      border-radius: 1px;
+      transform-origin: right center;
+    }
+    .shooting-star::after {
+      content: '';
+      position: absolute;
+      left: -2px; top: -2px;
+      width: 6px; height: 6px;
+      background: #fff;
+      border-radius: 50%;
+      box-shadow: 0 0 10px 4px rgba(200, 210, 255, 0.9);
+    }
+    @keyframes shoot {
+      0%   { opacity: 0;   transform: rotate(var(--angle)) translateX(0); }
+      8%   { opacity: 1; }
+      80%  { opacity: 0;   transform: rotate(var(--angle)) translateX(-700px); }
+      100% { opacity: 0;   transform: rotate(var(--angle)) translateX(-700px); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* お月様 */
+    .moon {
+      position: fixed;
+      top: 72px;
+      left: 5vw;
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: transparent;
+      box-shadow: inset -13px 5px 0 0 #f0e6b0;
+      pointer-events: none;
+      z-index: 2;
+    }
+    .moon::after {
+      content: '';
+      position: absolute;
+      inset: -22px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(240, 230, 176, 0.2) 0%, transparent 65%);
+    }
+
+    /* レスポンシブ */
+    @media (max-width: 600px) {
+      .story-wrapper { padding: 80px 22px 180px; }
+      .controls { top: 14px; right: 14px; }
+      .share-btn { right: 14px; bottom: 20px; }
+      #toast { right: 14px; bottom: 70px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- タイトル画面 -->
+  <div id="title-screen">
+    <p class="title-screen-text">これは　<br><br><br>　　　　　とある兄の<span class="mem-yellow">記憶</span></p>
+  </div>
+
+  <!-- BGM選択モーダル -->
+  <div id="bgm-modal">
+    <div class="bgm-modal-box">
+      <div class="modal-star">♪</div>
+      <h2>BGMを再生しますか？</h2>
+      <p>音楽とともに物語をお楽しみいただけます</p>
+      <div class="bgm-modal-btns">
+        <button class="btn-bgm-on" onclick="closeBgmModal(true)">▶ &nbsp;BGMをオン</button>
+        <button class="btn-bgm-off" onclick="closeBgmModal(false)">このまま読む</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="progress-bar"></div>
+  <div class="aurora">
+    <div class="aurora-band"></div>
+    <div class="aurora-band"></div>
+    <div class="aurora-band"></div>
+    <div class="aurora-band"></div>
+    <div class="aurora-band"></div>
+  </div>
+  <canvas id="star-canvas"></canvas>
+  <div class="moon"></div>
+  <canvas id="noise-overlay"></canvas>
+
+  <div class="story-wrapper">
+    <div class="story-title">
+      <h1>月の思い</h1>
+      <p>Thoughts of the Moon</p>
+    </div>
+
+    <p class="story-paragraph">
+      俺の名前は、月野武史。<br>
+      生まれた時から、先天性白血病だった。
+    </p>
+
+    <p class="story-paragraph">
+      同年代の子供たちが公園で遊んでいるのを、<br>
+      俺はいつも病院の窓から眺めていた。
+    </p>
+
+    <p class="story-paragraph">
+      注射も薬も、大嫌いだった。
+    </p>
+
+    <p class="story-paragraph">
+      <span class="em">だけど――<br>
+      俺は、生き延びた。</span>
+    </p>
+
+    <p class="story-paragraph">
+      あとになって両親から聞いた。<br>
+      俺が助かったのは…………<br>
+      妹のおかげだと。
+    </p>
+
+    <p class="story-paragraph">
+      俺の治療のために生まれてきた子。<br>
+      名前は……<br>
+      森村星乃。
+    </p>
+
+    <p class="story-paragraph">
+      夜空の星みたいな名前で、<br>
+      とても可愛いと思った。
+    </p>
+
+    <p class="story-paragraph">
+      俺が初めて星ちゃんに会ったのは、<br>
+      両親に連れられて親戚の家に行ったときだった。
+    </p>
+
+    <p class="story-paragraph">
+      玄関の奥から、小さな女の子が顔を出した。
+    </p>
+
+    <p class="story-paragraph">
+      俺と目が合うと、<br>
+      にこっと笑った。<br>
+      <br>
+      その目はキラキラしていて、<br>
+      まるでヒーローを見つめてるみたいだった。
+    </p>
+
+    <p class="story-paragraph">
+      そんなふうに俺を見てくれたのは、<br>
+      彼女が初めてだった。<br>
+      <br>
+      同級生はみんな、俺を病弱扱いして<br>
+      一緒に遊んではくれなかったから。<br>
+      <br>
+      でも、星ちゃんは違った。<br>
+      俺をヒーローだと思っているみたいだった。<br>
+      <br>
+      照れくさいけど――<br>
+      悪い気はしなかった。<br>
+      <br>
+      <span style="color:#f0e6b0;">"星ちゃんのヒーロー。"</span><br>
+      <br>
+      それだけで、<br>
+      心が少し軽くなった。
+    </p>
+
+    <p class="story-paragraph">
+      その夜、星ちゃんが聞いてきた。<br>
+      <span style="color:#f9a8d4;">「なんで私、お兄ちゃんと苗字が違うの？」</span><br>
+      <br>
+      正直、答えに困った。<br>
+      <br>
+      本当のことなんて、<br>
+      とても言えるはずがない。<br>
+      <br>
+      だから俺は、こう言った。<br>
+      <br>
+      <span style="color:#6ee7b7;">「俺たちは、父さんと母さんの二人の宝物なんだ。<br>
+      だから、それぞれの苗字をもらったんだよ」</span><br>
+      <br>
+      星ちゃんは少し考えてから、<br>
+      <br>
+      <span style="color:#f9a8d4;">「そっか♪」</span><br>
+      <br>
+      そう言って、安心したように笑った。<br>
+      <br>
+      ……もし星ちゃんが、<br>
+　　　本当のことを知ったら…<br>
+      <br>
+      俺のこと<br>
+      嫌いになるかな……
+    </p>
+
+    <div class="divider">⋆☽︎︎　⋆☽︎︎　⋆☽︎︎</div>
+
+    <p class="story-paragraph">
+      帰り際、両親に言われた。<br>
+      <br>
+      「何が聞こえても振り返るな」<br>
+      <br>
+      だから俺は振り返らなかった。<br>
+      <br>
+      でも、後ろから聞こえた。<br>
+      <br>
+      <span style="color:#f9a8d4;">「行かないでーーーーー！！」</span><br>
+      泣き叫ぶ声。<br>
+      <br>
+      星ちゃんの声が、<br>
+      耳に焼きついた。
+    </p>
+
+    <div class="divider">⋆☽︎︎　⋆☽︎︎　⋆☽︎︎</div>
+
+    <p class="story-paragraph">
+      俺は知っていた。<br>
+      <br>
+      星ちゃんが親戚の家で、<br>
+      あまり楽しそうじゃないことを。<br>
+      <br>
+      いや。<br>
+      "楽しそうじゃない"なんて言葉じゃ足りない。<br>
+      <br>
+      星ちゃんは……<br>
+      居場所がない顔をしていた。
+    </p>
+
+    <p class="story-paragraph">
+      だから会いに行くときは必ず、<br>
+      星ちゃんが喜びそうなものを持っていった。<br>
+      <br>
+      ミルキー。<br>
+      小さなお人形。<br>
+      『星の王子様』の絵本。<br>
+      <br>
+      どれも宝物みたいに抱きしめて喜んでいた。
+    </p>
+
+    <p class="story-paragraph">
+      だから俺は、<br>
+      つい嘘をついてしまった。<br>
+      <br>
+      <span style="color:#6ee7b7;">「『星の王子様』を全部読めるようになったら<br>
+      星ちゃんを連れて帰る。」</span><br>
+      <br>
+      それを聞いた星ちゃんは、<br>
+      必死で文字を覚えていた。<br>
+      <br>
+      ページを指でなぞりながら。<br>
+      何度も、何度も。<br>
+      <br>
+      本当に、<br>
+      可愛いよ。
+    </p>
+
+    <div class="divider">⋆☽︎︎　⋆☽︎︎　⋆☽︎︎</div>
+
+    <p class="story-paragraph">
+      星ちゃんが本当に欲しかったもの。<br>
+      <br>
+      それはきっと、<br>
+      家に帰ること。<br>
+      <br>
+      お父さんとお母さん、<br>
+      そして俺が一緒にいる家に。
+    </p>
+
+    <p class="story-paragraph">
+      でも俺は知っていた。<br>
+      <br>
+      俺の医療費と星ちゃんの生活費で、<br>
+      両親はもう限界だった。<br>
+      <br>
+      二人の子どもを同時に育てる余裕なんて、<br>
+      本当になかったんだ。
+    </p>
+
+    <div class="divider">⋆☽︎︎　⋆☽︎︎　⋆☽︎︎</div>
+
+    <p class="story-paragraph">
+      ある日、ミルキーを舐めながら<br>
+      星ちゃんが言った。<br>
+      <br>
+      <span style="color:#f9a8d4;">「私一度もプレゼントのお返ししたことない」</span>
+    </p>
+
+    <p class="story-paragraph">
+      俺は軽くからかった。<br>
+      <br>
+      <span style="color:#6ee7b7;">「じゃあ星ちゃんが大きくなったら<br>
+      俺の欲しいものを買ってくれ、それまで覚えていたらだけどな」</span><br>
+      <br>
+      そう返すと、星ちゃんは<br>
+      ミルキーの包み紙を差し出してきた。<br>
+      <br>
+       <span style="color:#f9a8d4;">「将来ほしいものができたら、これに書いて」</span><br>
+      <br>
+      小さな手で、ぎゅっと握って。<br>
+      <br>
+       <span style="color:#f9a8d4;">「私が買ってあげる！<br>
+      絶対、絶対約束守るからね！」</span><br>
+      <br>
+      真剣な顔で、指切りまでしてきた。<br>
+      <br>
+      ……本当に、いい子だなあ。
+    </p>
+
+    <p class="story-paragraph">
+      俺は見返りなんて求めてないのに。<br>
+      俺のせいで、寂しい思いをさせてるのに…
+    </p>
+
+    <p class="story-paragraph">
+      俺は誰にも嘘はつかないと決めていたが<br>
+      星ちゃんには、たくさん嘘をついてしまったな。<br>
+      <br>
+      流れ星に願い事をすれば叶う、って嘘。<br>
+      『星の王子様』を読めるようになったら連れて帰る、って嘘。<br>
+      <br>
+      それから……<br>
+      <br>
+      お父さんとお母さんと<br>
+      遊園地に行ったことある、って嘘も。<br>
+      <br>
+      病院と家の往復ばかりだったから。<br>
+      両親が俺を遊園地に連れて行けるわけないんだ。<br>
+      <br>
+      本当は俺だって、<br>
+      星ちゃんも一緒に、<br>
+      家族みんなで遊園地に行きたかった。<br>
+      <br>
+      観覧車とか、ジェットコースターとか、<br>
+      そんなのどうでもよくて。<br>
+      <br>
+      ただ、四人で笑ってみたかった。<br>
+      <br>
+      だから俺は必死に勉強した。<br>
+      <br>
+      早く大人になりたかった。<br>
+      早く働いて、<br>
+      早く金を稼いで、<br>
+      <br>
+      お父さんとお母さん、<br>
+      そして星ちゃんを――<br>
+      <br>
+      支えられるようになりたかった。
+    </p>
+
+    <div class="divider">⋆☽︎︎　⋆☽︎︎　⋆☽︎︎</div>
+
+    <p class="story-paragraph">
+      そして俺が十八歳のとき。<br>
+      世界が変わった。<br>
+      <br>
+      両親が事故で<br>
+      ……死んでしまった。
+    </p>
+
+    <div class="divider">⋆☽︎︎　⋆☽︎︎　⋆☽︎︎</div>
+
+    <p class="story-paragraph">
+      俺は星ちゃんを迎えに行った。<br>
+      <br>
+      久しぶりに会った星ちゃんは、<br>
+      期待した目で俺を見ていた。<br>
+      <br>
+      でも俺は、両親が死んだことを<br>
+      上手く説明できなかった。<br>
+      <br>
+      また、失望させてしまうんじゃないか。<br>
+      そう思い、口から出た言葉は…<br>
+      <br>
+      <span style="color:#6ee7b7;">「家事を覚えろ」</span><br>
+      だった。
+    </p>
+
+    <p class="story-paragraph">
+      星ちゃんが一人でも生きていけるように。<br>
+      それだけを考えていた。<br>
+      <br>
+      彼女に悲しむ時間なんて、与えなかった。<br>
+      <br>
+      星ちゃんがずっと帰りたがっていた<br>
+      家なのに。<br>
+      <br>
+      彼女は嬉しそうじゃなかった。
+    </p>
+
+    <div class="divider">⋆☽︎︎　⋆☽︎︎　⋆☽︎︎</div>
+
+    <p class="story-paragraph">
+      それから星ちゃんは、俺を避けるようになった。<br>
+      <br>
+      二人きりの家。<br>
+      <br>
+      会話は、どんどん減っていった。
+    </p>
+
+    <p class="story-paragraph">
+      星ちゃんが俺を嫌いなのは知っている。<br>
+      <br>
+      俺が星ちゃんの幼少期を奪った。<br>
+      両親の愛情も。<br>
+      全部、俺が奪ったんだ。<br>
+    </p>
+
+    <p class="story-paragraph">
+      だからこそ俺は、<br>
+      星ちゃんを守らないといけない。<br>
+      星ちゃんを立派な大人にしないといけない。<br>
+      <br>
+      俺が居なくなっても生きていけるように。
+    </p>
+
+    <div class="divider">⋆☽︎︎　⋆☽︎︎　⋆☽︎︎</div>
+
+    <p class="story-paragraph">
+      学年トップの成績だった俺は高校を中退した。<br>
+      <br>
+      両親が死んでから、<br>
+      成績？そんなものはどうでもよくなった。
+    </p>
+
+    <p class="story-paragraph">
+      とにかく金が必要だった。<br>
+      <br>
+      たくさん。<br>
+      たくさん。<br>
+      たくさん。
+    </p>
+
+    <p class="story-paragraph">
+      星ちゃんを大学に行かせるために。<br>
+      星ちゃんを守るために。<br>
+      星ちゃんが自由に生きられるように。<br>
+      せめて、星ちゃんだけは…
+    </p>
+
+    <p class="story-paragraph">
+      きっと大丈夫、全部うまくいく。<br>
+      俺が一生懸命働けばいい。<br>
+      俺が何としても星ちゃんの支えになる。
+    </p>
+
+    <div class="divider">⋆☽︎︎　⋆☽︎︎　⋆☽︎︎</div>
+
+    <p class="story-paragraph">
+      でも現実は甘くなかった。<br>
+      高校中退した俺に、いい仕事なんて見つからなかった。
+    </p>
+
+    <p class="story-paragraph">
+      俺は……<br>
+      チンピラになった。<br>
+      <br>
+      金が稼げるから。<br>
+      強くなれるから。<br>
+      星ちゃんを守れるから。<br>
+      <br>
+      そう思った。
+    </p>
+
+    <p class="story-paragraph">
+      その頃からだった。<br>
+      妙に身体がだるい。<br>
+      <br>
+      喧嘩のあと、<br>
+      血が止まりにくいことが増えた。<br>
+      <br>
+      鼻血もよく出た。<br>
+      <br>
+      ……昔のことを思い出して<br>
+      少しだけ怖かった。<br>
+      <br>
+      でも、<br>
+      考えないようにした。<br>
+      <br>
+      俺は、<br>
+      止まってる暇なんてなかったから。
+    </p>
+
+    <div class="divider">⋆☽︎︎　⋆☽︎︎　⋆☽︎︎</div>
+
+    <p class="story-paragraph">
+      星ちゃんは、<br>
+      前にもまして俺を嫌いになった。<br>
+      <br>
+      俺を空気みたいに扱うようになった。
+    </p>
+
+    <p class="story-paragraph">
+      酒もタバコも。<br>
+      喧嘩も。<br>
+      怪我して帰る俺も。<br>
+      <br>
+      きっと全部、いやだっただろう。
+    </p>
+
+    <p class="story-paragraph">
+      でもな。<br>
+      <br>
+      お兄ちゃん、<br>
+      お前を守るために<br>
+      これしかできなかったんだ。<br>
+      <br>
+      ごめんな。
+    </p>
+
+    <div class="divider">⋆☽︎︎　⋆☽︎︎　⋆☽︎︎</div>
+
+    <p class="story-paragraph">
+      ある日、チンピラの後輩が<br>
+      星ちゃんの大切な友達を襲った。<br>
+      <br>
+      俺は本当に、本当に知らなかったんだ。
+    </p>
+
+    <p class="story-paragraph">
+      でも、そうだよな。<br>
+      <br>
+      お兄ちゃんなんて<br>
+      いない方がいいよな。<br>
+      <br>
+      俺はただ、<br>
+      星ちゃんを守りたかっただけなんだ。
+    </p>
+
+    <p class="story-paragraph">
+      あいつらにはきつく言っておいた。<br>
+      <br>
+      俺の大事な妹と<br>
+      妹の友達に<br>
+      二度と近づくなって。<br>
+      <br>
+      ……俺、また嫌われたかな。
+    </p>
+
+    <div class="divider">⋆☽︎︎　⋆☽︎︎　⋆☽︎︎</div>
+
+    <p class="story-paragraph">
+      ある日、<br>
+      星ちゃんの担任の先生に呼び出された。<br>
+      <br>
+      そこで見たんだ。<br>
+      <br>
+      星ちゃんが書いた願い事の紙。<br>
+      紙いっぱいの"願い事"<br>
+      <br>
+      その中に俺の名前は――<br>
+      ……無かった。
+    </p>
+
+    <p class="story-paragraph">
+      その瞬間思ったんだ。<br>
+      <br>
+      星ちゃんに内緒で。<br>
+      全部、叶えてやろうって。<br>
+      <br>
+      それが、<br>
+      唯一俺にできることだ。
+    </p>
+
+    <div class="divider">⋆☽︎︎　⋆☽︎︎　⋆☽︎︎</div>
+
+    <p class="story-paragraph">
+      それから、俺はサンタになった。<br>
+      星ちゃんの願い事の紙を見て、<br>
+      初めて彼女が欲しいものがわかった。<br>
+      今まで何も気づいてやれていなかった。
+    </p>
+
+    <p class="story-paragraph">
+      星ちゃん、<br>
+      保護者会に、来て欲しかったんだな<br>
+      ずっと……不参加でごめんな。<br>
+      <br>
+      お兄ちゃんが行ったら<br>
+      嫌がると思ったんだ。<br>
+      <br>
+      お兄ちゃん<br>
+      ガラ悪いし、<br>
+      嫌われてるし。<br>
+      <br>
+      恥ずかしい思いさせると<br>
+      思ったんだ。<br>
+      <br>
+      でも――<br>
+      星ちゃんの願いだもんな。<br>
+      <br>
+      だから、最後の保護者会は、<br>
+      ちゃんと顔を出したぞ。
+    </p>
+
+    <div class="divider">⋆☽︎︎　⋆☽︎︎　⋆☽︎︎</div>
+
+    <p class="story-paragraph">
+      カップケーキ。<br>
+      万年筆。<br>
+      ヘアピン。<br>
+      <br>
+      本当は、手渡ししたかった。<br>
+      <br>
+      でも嫌われてるから。<br>
+      <br>
+      だから全部、お店に頼んだ。
+    </p>
+
+    <p class="story-paragraph">
+      俺、実はこっそり隠れて見ていたんだ。<br>
+      星ちゃんの嬉しそうな顔。<br>
+      <br>
+      久しぶりに見れた。<br>
+      <br>
+      俺の大好きな笑顔。
+    </p>
+
+    <div class="divider">⋆☽︎︎　⋆☽︎︎　⋆☽︎︎</div>
+
+    <p class="story-paragraph">
+      穏やかな日々は、そう長くは続かなかった。<br>
+      俺は突然倒れてしまった。<br>
+      <br>
+      白血病の再発だった。<br>
+      <br>
+      俺は、入院することになった。
+    </p>
+
+    <p class="story-paragraph">
+      あんなに嫌いだった注射や薬に、<br>
+      また頼ることになるなんて……<br>
+      <br>
+      こんな姿見せたくなかった、<br>
+      また世話かける方になってしまった。<br>
+      <br>
+      ごめんな、星ちゃん<br>
+      迷惑かけるな。
+    </p>
+
+    <div class="divider">⋆☽︎︎　⋆☽︎︎　⋆☽︎︎</div>
+
+    <p class="story-paragraph">
+      星ちゃん。<br>
+      <br>
+      大学合格、おめでとう！<br>
+      <br>
+      俺が行きたかった大学だな。<br>
+      <br>
+      お前は本当に<br>
+      俺の自慢の妹だよ。<br>
+      <br>
+      もう少しだけ、<br>
+      星ちゃんの未来を見届けていたいな。
+    </p>
+
+    <div class="divider">⋆☽︎︎　⋆☽︎︎　⋆☽︎︎</div>
+
+    <p class="story-paragraph">
+      星ちゃん。<br>
+      <br>
+      ここ数日、毎日来てくれてありがとう。<br>
+      『星の王子様』を読んでくれてありがとう。<br>
+      学校の話、いっぱいしてくれてありがとう。<br>
+      <br>
+      お兄ちゃんちっとも辛くないからな？<br>
+      <br>
+      星ちゃんが来てくれるだけで<br>
+      幸せだ。
+    </p>
+
+    <div class="divider">⋆☽︎︎　⋆☽︎︎　⋆☽︎︎</div>
+
+    <p class="story-paragraph">
+      <span style="color:#6ee7b7;">「星ちゃん。<br>
+      あいつで本当に大丈夫か？」</span><br>
+      <br>
+      あいつに星ちゃんを守れるのか、<br>
+      少し不安だが……星ちゃんが選ぶやつだから、間違いないはずだ。
+    </p>
+
+    <p class="story-paragraph">
+      でも<br>
+      <span style="color:#6ee7b7;">「将来、あいつが星ちゃんのことをいじめたら、<br>
+      俺が真っ先に殴ってやるからな！」</span><br>
+      <br>
+      星ちゃんの花嫁姿、見たいなぁ。<br>
+      <br>
+      俺、泣くんだろうなぁ。<br>
+      格好悪いだろうなぁ。<br>
+      <br>
+      そん時は俺のこと笑うなよ？<br>
+      <br>
+      俺はお前のこと、<br>
+      誰よりも誇りに思ってるからな。
+    </p>
+
+    <div class="divider">⋆☽︎︎　⋆☽︎︎　⋆☽︎︎</div>
+
+    <p class="story-paragraph">
+      星ちゃん！<br>
+      <br>
+      やっと、<br>
+      「お兄ちゃん」<br>
+      って呼んでくれたな。<br>
+      <br>
+      何年ぶりだろうな。<br>
+      <br>
+      嬉しいよ。<br>
+      <br>
+      俺ちゃんと、<br>
+      "お兄ちゃん"になれたかな。
+    </p>
+
+    <p class="story-paragraph">
+      帰り際、星ちゃんは言った。<br>
+      <span style="color:#f9a8d4;">「また明日ね、お兄ちゃん」</span><br>
+      <br>
+      <span style="color:#6ee7b7;">「また明日、星ちゃん」</span>
+    </p>
+
+    <div class="divider">⋆☽︎︎　⋆☽︎︎　⋆☽︎︎</div>
+
+    <p class="story-paragraph">
+      星ちゃん。<br>
+      <br>
+      最近、手が重いんだ。<br>
+      <br>
+      ペンを持つのも限界なんだ。<br>
+      でもこれだけは星ちゃんの友達に送りたい。<br>
+      <br>
+      <span style="color:#6ee7b7;">「星ちゃんのことを頼んだ。」</span>って。<br>
+      本当はこんな手紙、送りたくなかった。<br>
+      泣いていたらダメだな、こんな姿見せられない。<br>
+      <br>
+      俺は限界なんだろうか。<br>
+      <br>
+      俺が星ちゃんに残せるもの。<br>
+      俺にもう少しだけ、時間をください。
+    </p>
+
+    <div class="divider">⋆☽︎︎　⋆☽︎︎　⋆☽︎︎</div>
+
+    <p class="story-paragraph">
+      看護師に頼んで<br>
+      願い事リストにあった<br>
+      最後のプレゼントを隠してもらった。<br>
+      <br>
+      <span style="color:#f0e6b0;">"天体望遠鏡"</span><br>
+      <br>
+      これで星ちゃんが好きな流れ星を見て欲しい。<br>
+      <br>
+      星ちゃんの<br>
+      はしゃいでる姿見たかったな。
+    </p>
+
+    <div class="divider">⋆☽︎︎　⋆☽︎︎　⋆☽︎︎</div>
+
+    <p class="story-paragraph">
+       <span style="color:#f9a8d4;">「また明日」</span><br>
+      が脳内に響く。
+    </p>
+
+    <p class="story-paragraph">
+      星ちゃん。<br>
+      <br>
+      最後まで、<br>
+      不甲斐ない兄でごめんな。<br>
+      <br>
+      俺、<br>
+      星ちゃんに「愛」を返せたかな。<br>
+      <br>
+      結局また<br>
+      一人にしちゃうよな。<br>
+      <br>
+      ごめんな。
+    </p>
+
+    <p class="story-paragraph">
+      でもな。<br>
+      <br>
+      俺は、<br>
+      星ちゃんが妹で<br>
+      本当に、本当に、<br>
+      よかった。<br>
+      <br>
+      お兄ちゃんは<br>
+      星ちゃんの笑顔が<br>
+      大好きなんだ。<br>
+      <br>
+      何も言わずに<br>
+      星ちゃんのそばを離れることを、許してほしい。<br>
+      <br>
+      俺だって離れたくないんだけどな。<br>
+      ごめんな。
+    </p>
+
+    <div class="divider">⋆☽︎︎　⋆☽︎︎　⋆☽︎︎</div>
+
+    <p class="story-paragraph">
+      星ちゃん<br>
+      <span class="em-yellow" onclick="openMilkyLightbox()">ミルキー</span>の包み紙の約束<br>
+      まだ覚えてる？
+    </p>
+
+    <p class="story-paragraph">
+      お兄ちゃんが本当に欲しかったものは<br>
+      最初から一つだけだった。
+    </p>
+
+    <div class="divider">⋆☽︎︎　⋆☽︎︎　⋆☽︎︎</div>
+
+    <p class="story-paragraph">
+      お兄ちゃんは、<br>
+      <br>
+      <span style="color:#f0e6b0;">星ちゃんの幸せを<br>
+      ずっと<br>
+      ずっと<br>
+      願ってる。</span>
+    </p>
+
+    <p class="story-paragraph">
+      月野武史。
+    </p>
+
+    <p class="story-paragraph story-end">- end -</p>
+
+    <div class="credits">
+      <p>作者・デザイン：れい</p>
+      <p>監修：neko</p>
+      <p>BGM：星空の子守歌‐オルゴールver.(BGMer)</p>
+      <p class="copyright">© れい　無断転載・複製・スクリーンショットの二次配布を禁止します。</p>
+    </div>
+  </div>
+
+  <!-- コントロール（右上） -->
+  <div class="controls">
+    <button class="ctrl-btn" id="bgm-btn" onclick="toggleBGM()">
+      <span class="ctrl-icon" id="bgm-icon">▶</span>
+      <span>BGM</span>
+    </button>
+    <button class="ctrl-btn" id="scroll-btn" onclick="toggleAutoScroll()">
+      <span class="ctrl-icon">↓</span>
+      <span>自動スクロール</span>
+    </button>
+  </div>
+
+  <!-- シェアボタン（右下） -->
+  <button class="share-btn" onclick="shareContent()">
+    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:2px"><path d="M4 14v6h16v-6"/><path d="M9 16C9 8 17 5 21 5"/><polyline points="18 2 21 5 18 8"/></svg><span>シェア</span>
+  </button>
+
+  <div id="toast"></div>
+
+  <!-- ミルキーライトボックス -->
+  <div id="milky-lightbox" onclick="closeMilkyLightbox()" oncontextmenu="return false">
+    <img src="milky.png" alt="" draggable="false" oncontextmenu="return false" />
+  </div>
+
+
+  <!-- BGM -->
+  <audio id="bgm-audio" loop>
+    <source src="/bgm.mp3" type="audio/mpeg" />
+  </audio>
+
+  <script>
+    // =============================================
+    //  星キャンバス
+    // =============================================
+    const starCanvas = document.getElementById('star-canvas');
+    const sCtx = starCanvas.getContext('2d');
+    const stars = [];
+
+    // 星の色バリエーション（実際の星の色温度に近い）
+    const STAR_COLORS = [
+      [255,255,255],  // 白
+      [210,225,255],  // 青白
+      [255,245,210],  // 淡黄
+      [200,215,255],  // 青
+      [255,220,200],  // 淡橙
+      [220,200,255],  // 淡紫
+    ];
+
+    function resizeCanvas() {
+      starCanvas.width  = window.innerWidth;
+      starCanvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', () => { resizeCanvas(); buildStars(); });
+
+    function buildStars() {
+      stars.length = 0;
+      const w = starCanvas.width, h = starCanvas.height;
+      const count = Math.floor(w * h / 4500); // 画面サイズに応じて密度調整
+
+      // 天の川：画面を斜めに流れる淡い星の帯
+      const MW_STARS = Math.floor(count * 0.4);
+      for (let i = 0; i < MW_STARS; i++) {
+        // 斜め帯（左上→右下方向）の分布
+        const t = Math.random();
+        const band = (Math.random() - 0.5) * 0.28;
+        const cx = t + band * 0.4;
+        const cy = t * 0.75 + band + 0.05;
+        stars.push({
+          x:     cx,
+          y:     cy,
+          r:     Math.random() * 0.8 + 0.15,
+          phase: Math.random() * Math.PI * 2,
+          spd:   Math.random() * 0.4 + 0.15,
+          col:   STAR_COLORS[Math.floor(Math.random() * STAR_COLORS.length)],
+          glow:  false,
+          minOp: 0.2,
+        });
+      }
+
+      // 通常の小さい星（全体に散らばる）
+      const SMALL = Math.floor(count * 0.45);
+      for (let i = 0; i < SMALL; i++) {
+        stars.push({
+          x:     Math.random(),
+          y:     Math.random(),
+          r:     Math.random() * 1.0 + 0.2,
+          phase: Math.random() * Math.PI * 2,
+          spd:   Math.random() * 0.6 + 0.2,
+          col:   STAR_COLORS[Math.floor(Math.random() * STAR_COLORS.length)],
+          glow:  false,
+          minOp: 0.25,
+        });
+      }
+
+      // 中くらいの星（少なめ）
+      const MED = Math.floor(count * 0.12);
+      for (let i = 0; i < MED; i++) {
+        stars.push({
+          x:     Math.random(),
+          y:     Math.random(),
+          r:     Math.random() * 1.2 + 1.0,
+          phase: Math.random() * Math.PI * 2,
+          spd:   Math.random() * 0.5 + 0.15,
+          col:   STAR_COLORS[Math.floor(Math.random() * STAR_COLORS.length)],
+          glow:  false,
+          minOp: 0.4,
+        });
+      }
+
+      // 明るいキラキラ星（ごく少数、グロー強め）
+      const BIG = Math.floor(count * 0.03) + 4;
+      for (let i = 0; i < BIG; i++) {
+        const col = STAR_COLORS[Math.floor(Math.random() * STAR_COLORS.length)];
+        stars.push({
+          x:     Math.random(),
+          y:     Math.random(),
+          r:     Math.random() * 0.8 + 1.8,
+          phase: Math.random() * Math.PI * 2,
+          spd:   Math.random() * 0.3 + 0.08,
+          col,
+          glow:  false,
+          minOp: 0.5,
+          sparkle: true,
+          sparklePhase: Math.random() * Math.PI * 2,
+          sparkleSpd: Math.random() * 2 + 1.5,
+        });
+      }
+    }
+    buildStars();
+
+    function drawStars(t) {
+      const sec = t / 1000;
+      const w = starCanvas.width, h = starCanvas.height;
+      sCtx.clearRect(0, 0, w, h);
+
+      for (const s of stars) {
+        const sx = s.x * w, sy = s.y * h;
+        let opacity = s.minOp + (1 - s.minOp) * (0.5 + 0.5 * Math.sin(sec * s.spd + s.phase));
+
+        // キラキラ星は急速にまたたく
+        if (s.sparkle) {
+          const spark = 0.5 + 0.5 * Math.sin(sec * s.sparkleSpd + s.sparklePhase);
+          opacity = Math.min(1, opacity * (0.6 + 0.8 * spark));
+        }
+
+        const [r, g, b] = s.col;
+
+        // グロー（ぼんやりした光の広がり）
+        if (s.glow) {
+          const grad = sCtx.createRadialGradient(sx, sy, 0, sx, sy, s.glowR * 3);
+          grad.addColorStop(0, `rgba(${r},${g},${b},${(opacity * 0.35).toFixed(3)})`);
+          grad.addColorStop(1, `rgba(${r},${g},${b},0)`);
+          sCtx.beginPath();
+          sCtx.arc(sx, sy, s.glowR * 3, 0, Math.PI * 2);
+          sCtx.fillStyle = grad;
+          sCtx.fill();
+        }
+
+        // 星本体
+        sCtx.beginPath();
+        sCtx.arc(sx, sy, s.r, 0, Math.PI * 2);
+        sCtx.fillStyle = `rgba(${r},${g},${b},${opacity.toFixed(3)})`;
+        sCtx.fill();
+
+        // キラキラ星：十字の光芒
+        if (s.sparkle && opacity > 0.6) {
+          const len = s.r * 5 * (opacity - 0.4);
+          sCtx.strokeStyle = `rgba(${r},${g},${b},${(opacity * 0.5).toFixed(3)})`;
+          sCtx.lineWidth = 0.6;
+          sCtx.beginPath();
+          sCtx.moveTo(sx - len, sy); sCtx.lineTo(sx + len, sy);
+          sCtx.moveTo(sx, sy - len); sCtx.lineTo(sx, sy + len);
+          sCtx.stroke();
+        }
+      }
+      requestAnimationFrame(drawStars);
+    }
+    requestAnimationFrame(drawStars);
+
+    // =============================================
+    //  ノイズオーバーレイ（一度だけ生成）
+    // =============================================
+    (function buildNoise() {
+      const nc   = document.getElementById('noise-overlay');
+      nc.width   = 256;
+      nc.height  = 256;
+      nc.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;opacity:0.035;';
+      const nCtx = nc.getContext('2d');
+      const img  = nCtx.createImageData(256, 256);
+      for (let i = 0; i < img.data.length; i += 4) {
+        const v = Math.random() * 255 | 0;
+        img.data[i] = img.data[i+1] = img.data[i+2] = v;
+        img.data[i+3] = 12;
+      }
+      nCtx.putImageData(img, 0, 0);
+      // Tile it via CSS
+      const url = nc.toDataURL();
+      nc.style.backgroundImage = `url(${url})`;
+      nc.style.backgroundRepeat = 'repeat';
+      nc.width = nc.height = 0; // clear canvas, keep bg
+    })();
+
+    // =============================================
+    //  スクロール進捗
+    // =============================================
+    const progressBar = document.getElementById('progress-bar');
+    let scrollProgress = 0;
+
+    window.addEventListener('scroll', () => {
+      const max = document.body.scrollHeight - window.innerHeight;
+      scrollProgress = max > 0 ? window.scrollY / max : 0;
+      progressBar.style.width = (scrollProgress * 100) + '%';
+    }, { passive: true });
+
+    // =============================================
+    //  段落フェードイン（IntersectionObserver）
+    // =============================================
+    const paragraphs = document.querySelectorAll('.story-paragraph, .divider');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.15 });
+    paragraphs.forEach(p => observer.observe(p));
+
+    // =============================================
+    //  流れ星
+    // =============================================
+    function spawnShootingStar() {
+      const el  = document.createElement('div');
+      el.className = 'shooting-star';
+      const top   = Math.random() * 50 + 3;
+      const left  = Math.random() * 65 + 25;
+      const angle = -(Math.random() * 22 + 18);
+      const dur   = (Math.random() * 1.2 + 3.5).toFixed(2);
+      el.style.cssText = `
+        top: ${top}%;
+        left: ${left}%;
+        --angle: ${angle}deg;
+        animation: shoot ${dur}s ease-in forwards;
+      `;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), (parseFloat(dur) + 0.4) * 1000);
+    }
+
+    function scheduleNext() {
+      const base = 28000 + Math.random() * 18000;
+      const factor = 1 - scrollProgress * 0.4;
+      const delay = base * factor;
+      setTimeout(() => { spawnShootingStar(); scheduleNext(); }, delay);
+    }
+    function startShootingStars() {
+      setTimeout(scheduleNext, 5000);
+    }
+
+    // =============================================
+    //  BGM選択モーダル
+    // =============================================
+    const bgmModal = document.getElementById('bgm-modal');
+
+    function closeBgmModal(playBgm) {
+      // タイトル画面をゆっくりフェードイン（モーダルを土台に上から重ねる）
+      const ts = document.getElementById('title-screen');
+      ts.style.transition = 'none';
+      ts.style.opacity = '0';
+      ts.style.pointerEvents = 'none';
+
+      // モーダルの上からフェードイン開始
+      requestAnimationFrame(() => {
+        ts.style.transition = 'opacity 2.2s ease';
+        ts.style.opacity = '1';
+      });
+      // 背景が落ち着いてからテキストをじわりと表示
+      setTimeout(() => {
+        ts.querySelector('.title-screen-text').classList.add('reveal');
+      }, 1200);
+      // タイトル画面がある程度見えたらモーダルを削除
+      setTimeout(() => {
+        bgmModal.remove();
+      }, 2300);
+      // テキストのrevealアニメーション完了後にクリック可能にする（1200ms遅延 + 2800ms）
+      setTimeout(() => {
+        ts.style.pointerEvents = 'auto';
+        ts.addEventListener('click', dismissTitleScreen, { once: true });
+      }, 4000);
+
+      if (playBgm) {
+        bgmAudio.play().catch(() => showToast('BGMの再生には画面タップが必要です'));
+        bgmIcon.textContent = '❚❚';
+        bgmBtn.classList.add('active');
+        bgmPlaying = true;
+      }
+      let tsTimer;
+      function dismissTitleScreen() {
+        clearTimeout(tsTimer);
+        ts.style.pointerEvents = 'none';
+
+        // 各文字をspanで包んで一文字ずつ消す
+        const textEl = ts.querySelector('.title-screen-text');
+        const frag = document.createDocumentFragment();
+        textEl.childNodes.forEach(node => {
+          if (node.nodeType === 3) { // テキストノード
+            [...node.textContent].forEach(ch => {
+              const s = document.createElement('span');
+              s.textContent = ch;
+              frag.appendChild(s);
+            });
+          } else if (node.nodeName === 'BR') {
+            frag.appendChild(node.cloneNode());
+          } else if (node.nodeType === 1) { // span等
+            [...node.textContent].forEach(ch => {
+              const s = document.createElement('span');
+              s.textContent = ch;
+              if (node.className) s.className = node.className;
+              frag.appendChild(s);
+            });
+          }
+        });
+        textEl.innerHTML = '';
+        textEl.appendChild(frag);
+
+        // 表示文字だけ取得（空白・改行除く）
+        const chars = [...textEl.querySelectorAll('span')]
+          .filter(s => s.textContent.trim().length > 0);
+
+        const stagger = 320; // 文字間隔(ms)
+        chars.forEach((s, i) => {
+          setTimeout(() => {
+            s.style.transition = 'opacity 0.9s ease';
+            s.style.opacity = '0';
+          }, i * stagger);
+        });
+
+        // 全文字消えた後: 真っ黒で少し待ってからゆっくり物語へ
+        const charsDone = chars.length * stagger + 400;
+        setTimeout(() => {
+          ts.style.transition = 'opacity 2.8s ease';
+          ts.style.opacity = '0';
+          setTimeout(() => ts.remove(), 2900);
+        }, charsDone);
+
+        startShootingStars();
+      }
+      tsTimer = setTimeout(dismissTitleScreen, 10000);
+    }
+
+    // =============================================
+    //  BGM
+    // =============================================
+    const bgmAudio = document.getElementById('bgm-audio');
+    const bgmBtn   = document.getElementById('bgm-btn');
+    const bgmIcon  = document.getElementById('bgm-icon');
+    let bgmPlaying = false;
+
+    function toggleBGM() {
+      if (bgmPlaying) {
+        bgmAudio.pause();
+        bgmIcon.textContent = '▶';
+        bgmBtn.classList.remove('active');
+      } else {
+        bgmAudio.play().catch(() => showToast('BGMの再生には画面タップが必要です'));
+        bgmIcon.textContent = '❚❚';
+        bgmBtn.classList.add('active');
+      }
+      bgmPlaying = !bgmPlaying;
+    }
+
+    // =============================================
+    //  オートスクロール
+    // =============================================
+    const scrollBtn = document.getElementById('scroll-btn');
+    let autoScrollRaf = null;
+    let autoScrollActive = false;
+    let lastTs = null;
+    const SCROLL_PX_PER_SEC = 30; // 約30px/秒
+
+    function autoScrollStep(ts) {
+      if (!autoScrollActive) return;
+      if (lastTs !== null) {
+        const delta = (ts - lastTs) / 1000;
+        window.scrollBy(0, SCROLL_PX_PER_SEC * delta);
+        if (window.scrollY + window.innerHeight >= document.body.scrollHeight - 4) {
+          toggleAutoScroll();
+          return;
+        }
+      }
+      lastTs = ts;
+      autoScrollRaf = requestAnimationFrame(autoScrollStep);
+    }
+
+    function toggleAutoScroll() {
+      autoScrollActive = !autoScrollActive;
+      if (autoScrollActive) {
+        scrollBtn.classList.add('active');
+        lastTs = null;
+        autoScrollRaf = requestAnimationFrame(autoScrollStep);
+      } else {
+        scrollBtn.classList.remove('active');
+        if (autoScrollRaf) cancelAnimationFrame(autoScrollRaf);
+      }
+    }
+
+    // ユーザーが手動スクロールしたら自動スクロールを一時停止
+    window.addEventListener('wheel',      () => { if (autoScrollActive) toggleAutoScroll(); }, { passive: true });
+    window.addEventListener('touchstart', () => { if (autoScrollActive) toggleAutoScroll(); }, { passive: true });
+
+    // =============================================
+    //  シェア機能
+    // =============================================
+    function shareContent() {
+      // 現在表示されている最後の段落テキストを取得
+      const visible = Array.from(document.querySelectorAll('.story-paragraph.visible'))
+        .filter(p => !p.classList.contains('story-end'));
+      const last = visible[visible.length - 1];
+      const excerpt = last ? last.innerText.replace(/\s+/g, '') : '月の思い — Thoughts of the Moon';
+      const shareText = `「${excerpt.slice(0, 40)}${excerpt.length > 40 ? '……' : ''}」\n\n— 月の思い Thoughts of the Moon`;
+
+      if (navigator.share) {
+        navigator.share({ title: '月の思い', text: shareText }).catch(() => {});
+      } else {
+        navigator.clipboard.writeText(shareText)
+          .then(() => showToast('テキストをコピーしました ✦'))
+          .catch(() => showToast('コピーに失敗しました'));
+      }
+    }
+
+    // =============================================
+    //  トースト
+    // =============================================
+    const toastEl = document.getElementById('toast');
+    let toastTimer;
+
+    // =============================================
+    //  ミルキーライトボックス
+    // =============================================
+    function openMilkyLightbox() {
+      document.getElementById('milky-lightbox').classList.add('show');
+    }
+    function closeMilkyLightbox() {
+      document.getElementById('milky-lightbox').classList.remove('show');
+    }
+
+    // ダブルクリック禁止
+    document.addEventListener('dblclick', e => e.preventDefault());
+
+    function showToast(msg) {
+      toastEl.textContent = msg;
+      toastEl.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toastEl.classList.remove('show'), 3200);
+    }
+  </script>
+</body>
+</html>
