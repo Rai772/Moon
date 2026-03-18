@@ -5,7 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="format-detection" content="telephone=no" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <title>Thoughts of the Moon — 月の思い</title>
+  <title>月の思い -Thoughts of the Moon-</title>
+  <meta name="description" content="これは、とある兄の記憶。星に託した、最後の願い。" />
+  <meta property="og:title" content="月の思い -Thoughts of the Moon-" />
+  <meta property="og:description" content="これは、とある兄の記憶。星に託した、最後の願い。" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="月の思い -Thoughts of the Moon-" />
+  <meta name="twitter:description" content="これは、とある兄の記憶。星に託した、最後の願い。" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet" />
@@ -670,7 +677,7 @@
       そう言って、安心したように笑った。<br>
       <br>
       ……もし星ちゃんが、<br>
-　　　本当のことを知ったら…<br>
+      本当のことを知ったら…<br>
       <br>
       俺のこと<br>
       嫌いになるかな……
@@ -777,11 +784,11 @@
       そう返すと、星ちゃんは<br>
       ミルキーの包み紙を差し出してきた。<br>
       <br>
-       <span style="color:#f9a8d4;">「将来ほしいものができたら、これに書いて」</span><br>
+      <span style="color:#f9a8d4;">「将来ほしいものができたら、これに書いて」</span><br>
       <br>
       小さな手で、ぎゅっと握って。<br>
       <br>
-       <span style="color:#f9a8d4;">「私が買ってあげる！<br>
+      <span style="color:#f9a8d4;">「私が買ってあげる！<br>
       絶対、絶対約束守るからね！」</span><br>
       <br>
       真剣な顔で、指切りまでしてきた。<br>
@@ -1239,7 +1246,7 @@
     <div class="divider">⋆☽︎︎　⋆☽︎︎　⋆☽︎︎</div>
 
     <p class="story-paragraph">
-       <span style="color:#f9a8d4;">「また明日」</span><br>
+      <span style="color:#f9a8d4;">「また明日」</span><br>
       が脳内に響く。
     </p>
 
@@ -1325,6 +1332,11 @@
       <span class="ctrl-icon">↓</span>
       <span>自動スクロール</span>
     </button>
+    <div class="ctrl-btn" style="gap:0;padding:4px 8px;">
+      <button onclick="changeFontSize(-1)" style="background:none;border:none;color:inherit;font-family:inherit;font-size:0.75rem;padding:3px 8px;cursor:pointer;letter-spacing:0.04em;">A−</button>
+      <span style="color:rgba(100,116,139,0.5);font-size:0.7rem;">|</span>
+      <button onclick="changeFontSize(1)" style="background:none;border:none;color:inherit;font-family:inherit;font-size:0.88rem;padding:3px 8px;cursor:pointer;letter-spacing:0.04em;">A＋</button>
+    </div>
   </div>
 
   <!-- シェアボタン（右下） -->
@@ -1702,6 +1714,17 @@
       }
       lastTs = ts;
       autoScrollRaf = requestAnimationFrame(autoScrollStep);
+    }
+
+    // 文字サイズ調整
+    const fontSizes = [0.85, 0.92, 1.0, 1.08, 1.16, 1.25];
+    let fontSizeIndex = 2; // デフォルト: 1.0rem基準
+    function changeFontSize(dir) {
+      fontSizeIndex = Math.max(0, Math.min(fontSizes.length - 1, fontSizeIndex + dir));
+      const scale = fontSizes[fontSizeIndex];
+      document.querySelectorAll('.story-paragraph').forEach(el => {
+        el.style.fontSize = scale + 'rem';
+      });
     }
 
     function toggleAutoScroll() {
