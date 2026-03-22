@@ -545,6 +545,7 @@
       .share-btn { right: 14px; bottom: 20px; }
       #toast { right: 14px; bottom: 70px; }
       .moon { opacity: 0.18; }
+      .shooting-star { opacity: 0.35; }
     }
   </style>
 </head>
@@ -1318,7 +1319,6 @@
 
     <div class="credits">
       <p>作者・デザイン：れい</p>
-      <p>監修：neko</p>
       <p>BGM：星空の子守歌‐オルゴールver.(BGMer)</p>
       <p class="copyright">© Lei　無断転載・複製・スクリーンショットの二次配布を禁止します。</p>
     </div>
@@ -1332,13 +1332,15 @@
     </button>
     <button class="ctrl-btn" id="scroll-btn" onclick="toggleAutoScroll()">
       <span class="ctrl-icon">↓</span>
-      <span>自動スクロール</span>
+      <span>自動</span>
     </button>
-    <div class="ctrl-btn" style="gap:0;padding:4px 8px;">
-      <button onclick="changeFontSize(-1)" style="background:none;border:none;color:inherit;font-family:inherit;font-size:0.75rem;padding:3px 8px;cursor:pointer;letter-spacing:0.04em;">A−</button>
-      <span style="color:rgba(100,116,139,0.5);font-size:0.7rem;">|</span>
-      <button onclick="changeFontSize(1)" style="background:none;border:none;color:inherit;font-family:inherit;font-size:0.88rem;padding:3px 8px;cursor:pointer;letter-spacing:0.04em;">A＋</button>
-    </div>
+  </div>
+
+  <!-- 文字サイズ調整（右下・シェアの上） -->
+  <div style="position:fixed;bottom:76px;right:20px;z-index:100;display:flex;align-items:center;gap:0;background:rgba(2,8,24,0.65);border:1px solid rgba(100,116,139,0.3);border-radius:20px;padding:4px 8px;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);">
+    <button onclick="changeFontSize(-1)" style="background:none;border:none;color:rgba(148,163,184,0.7);font-family:inherit;font-size:0.75rem;padding:3px 8px;cursor:pointer;letter-spacing:0.04em;">A−</button>
+    <span style="color:rgba(100,116,139,0.5);font-size:0.7rem;">|</span>
+    <button onclick="changeFontSize(1)" style="background:none;border:none;color:rgba(148,163,184,0.7);font-family:inherit;font-size:0.88rem;padding:3px 8px;cursor:pointer;letter-spacing:0.04em;">A＋</button>
   </div>
 
   <!-- シェアボタン（右下） -->
@@ -1574,7 +1576,7 @@
     }
 
     function scheduleNext() {
-      const base = 27000 + Math.random() * 15000;
+      const base = 18000 + Math.random() * 12000;
       const factor = 1 - scrollProgress * 0.4;
       const delay = base * factor;
       setTimeout(() => { spawnShootingStar(); scheduleNext(); }, delay);
