@@ -521,11 +521,12 @@
       position: fixed;
       top: 72px;
       left: 5vw;
-      width: 54px;
-      height: 54px;
+      width: 90px;
+      height: 90px;
       border-radius: 50%;
       background: transparent;
-      box-shadow: inset -13px 5px 0 0 #f0e6b0;
+      box-shadow: inset -22px 8px 0 0 #f0e6b0;
+      transform: rotate(55deg);
       pointer-events: none;
       z-index: 2;
     }
@@ -543,6 +544,7 @@
       .controls { top: 14px; right: 14px; }
       .share-btn { right: 14px; bottom: 20px; }
       #toast { right: 14px; bottom: 70px; }
+      .moon { opacity: 0.18; }
     }
   </style>
 </head>
@@ -1354,7 +1356,7 @@
 
   <!-- BGM -->
   <audio id="bgm-audio" loop>
-    <source src="/bgm.mp3" type="audio/mpeg" />
+    <source src="bgm.mp3" type="audio/mpeg" />
   </audio>
 
   <script>
@@ -1572,7 +1574,7 @@
     }
 
     function scheduleNext() {
-      const base = 28000 + Math.random() * 18000;
+      const base = 27000 + Math.random() * 15000;
       const factor = 1 - scrollProgress * 0.4;
       const delay = base * factor;
       setTimeout(() => { spawnShootingStar(); scheduleNext(); }, delay);
